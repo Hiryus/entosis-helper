@@ -5,6 +5,10 @@ const System      = require(root + "/js/system.class.js");
 
 class Model {
     
+    /*
+    *   Model constructor
+    *   Create regular expression for later parsing and load systems name list from file.
+    */
     constructor() {
         // Systems attributes
         this.systems = [];
@@ -17,11 +21,19 @@ class Model {
         this.statusReg = "(" + statusList.map((status) => "(?:"+status+")").join("|") + ")";
     }
 	
+    /*
+    *   reset()
+    *   Clear all systems and associated ndoes.
+    */
     reset() {
         this.systems.forEach((system) => system.destruct());
         this.systems = [];
     }
     
+    /*
+    *   loadSystems()
+    *   Load systems name from file.
+    */
 	loadSystems() {
 		if(this.systemNames.length != 0) return Promise.resolve();
 		else return new Promise((resolve, reject) => {
@@ -34,6 +46,10 @@ class Model {
 		});
 	}
 	
+    /*
+    *   clean()
+    *   Remove tags, symbols and extra spaces from @str (in order to avoid typos).
+    */
 	clean(str) {
         // Remove tags
         str = str.replace(/<\/?[^>]+(>|$)/g, "");
@@ -43,6 +59,11 @@ class Model {
         return str.replace(/ {2,}/g, " ").trim();
 	}
 	
+    /*
+    *   checkSystem()
+    *   Try to infer @system name when misspelled.
+    *   Return system name or null if not found with accurate prediction.
+    */
 	checkSystem(system) {
         return this.loadSystems().then(() => {
             // 1. Look for exact match
@@ -73,6 +94,11 @@ class Model {
         });
 	}
     
+    /*
+    *   getSystem()
+    *   Return system object from system @name.
+    *   Create it if needed.
+    */
     getSystem(name) {
         return this.checkSystem(name.toUpperCase()).then((name) => {
             let systems = this.systems.filter((sys) => sys.name == name);
@@ -81,12 +107,20 @@ class Model {
         });
     }
     
+    /*
+    *   createSystem()
+    *   Create system object from @name.
+    */
     createSystem(name) {
         let system = new System(name);
         this.systems.push(system);
         return system.draw().then(() => system);
     }
     
+    /*
+    *   parse()
+    *   Parse @line log for comand and update model if needed.
+    */
     parse(line) {
         // Remove extra spaces, special characters, etc. in order to avoid typos
         line = this.clean(line);

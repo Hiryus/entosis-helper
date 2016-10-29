@@ -1,1 +1,1 @@
-src\node_modules\.bin\electron-packager src --all --asar --out=dist --overwrite --icon=src/img/icon.ico
+src\node_modules\.bin\electron-packager src --all --asar --out=D:\entosis-helper\ --overwrite --icon=src/img/icon.ico

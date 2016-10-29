@@ -6,13 +6,16 @@ const EventEmitter = require("events");
 const path         = require("path");
 const fs           = require("fs");
 const $            = require("jquery");
-const ts           = require("tail-stream");
 const Pool         = require(root + "/js/pool.class.js");
 const Model        = require(root + "/js/model.class.js");
 const Watcher      = require(root + "/js/watcher.class.js");
 
 class Application {
     
+    /*
+    *   Application constructor
+    *   Setup IHM, create events handler and read default chat logs.
+    */
     constructor() {
         // Create objects
         this.eventer = new EventEmitter();
@@ -34,6 +37,10 @@ class Application {
         this.readLogFile("fleet");
     }
     
+    /*
+    *   setupIhm()
+    *   Initialize HTML (hide hidden DIVs, resize window, define button handlers...).
+    */
     setupIhm() {
         // Hide console
         $(".console").hide();
@@ -49,7 +56,12 @@ class Application {
         $("#console_btn").click(() => $(".console").toggle(300));
     }
     
+    /*
+    *   changeLogFile()
+    *   Ask user for loading a new file and parse it.
+    */
     changeLogFile() {
+        // Show file dialog
         let file = dialog.showOpenDialog({
             title: "Change log file",
             defaultPath: path.join(app.getPath("documents"), "EVE", "logs", "Chatlogs"),
@@ -60,15 +72,24 @@ class Application {
             ],
             properties: [ "openFile" ]
         });
+        // If use selected a file, watch it (it will unwatch the old one)
         if(typeof file != "undefined" && file.length > 0)
             this.watcher.manage(file[0]);
     }
     
+    /*
+    *   resize()
+    *   Resize section to fit window size.
+    */
     resize() {
         let height = $(window).innerHeight() - $("h1").outerHeight() - $("footer").outerHeight();
         $("section").outerHeight(height);
     }
     
+    /*
+    *   readLogFile()
+    *   Get @channel log file and watch it (it will unwatch old file if any).
+    */
     readLogFile(channel) {
         return this.getLogFile(channel).then((file) => {
             this.watcher.manage(file);
@@ -77,6 +98,10 @@ class Application {
         });
     }
     
+    /*
+    *   getLogFile()
+    *   Find @channel newest log file and return path.
+    */
     getLogFile(channel) {
         const folder = app.getPath("documents") + "/EVE/logs/Chatlogs/";
         return new Promise((resolve, reject) => {
@@ -98,6 +123,10 @@ class Application {
         });
     }
     
+    /*
+    *   getNewest()
+    *   Find newest file ba sed on fs.stats from @files list in @folder path.
+    */
     getNewest(folder, files) {
         // Get last modified date
         return Promise.all(files.map((name) => {

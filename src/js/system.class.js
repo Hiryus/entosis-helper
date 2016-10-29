@@ -3,27 +3,46 @@ const $ = require("jquery");
 
 class System {
     
+    /*
+    *   System constructor with @name of the system
+    */
     constructor(name) {
         this.name = name;
         this.nodes = [];
     }
     
+    /*
+    *   destruct()
+    *   Delete system on view.
+    */
     destruct() {
         $("#" + this.name + "_system").detach();
     }
     
+    /*
+    *   createNode()
+    *   Create node with @id ID.
+    */
     createNode(id) {
         let node = { id: id, state: "neutral" };
         this.nodes.push(node);
         return node;
     }
     
+    /*
+    *   deleteNode()
+    *   Delete node with @id ID and update view.
+    */
     deleteNode(id) {
         id = id.toUpperCase();
         this.nodes = this.nodes.filter((node) => node.id != id);
         this.update();
     }
     
+    /*
+    *   getNode()
+    *   Return node with @id ID.
+    */
     getNode(id) {
         id = id.toUpperCase();
         let nodes = this.nodes.filter((node) => node.id == id);
@@ -31,12 +50,21 @@ class System {
         else return this.createNode(id);
     }
     
+    /*
+    *   setNode()
+    *   Set @state state on node with @id ID and update view.
+    *   Create the node if needed.
+    */
     setNode(id, state) {
         let node = this.getNode(id);
 		if(state != null) node.state = state;
         this.update();
     }
     
+    /*
+    *   update()
+    *   Update view based on internal system state.
+    */
     update() {
         function formatNodes(list) {
             if(list.length > 0) return list.map((node) => node.id).join(", ");
@@ -55,6 +83,10 @@ class System {
         $("#" + this.name + "_enemy_nodes").text(formatNodes(enemy));
     }
     
+    /*
+    *   draw()
+    *   Add the system to view (when created).
+    */
     draw() {
         return new Promise((resolve, reject) => {
             ejs.renderFile(root + "/html/system.ejs", {
