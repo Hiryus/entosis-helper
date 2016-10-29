@@ -1,0 +1,62 @@
+.topbar_btn {
+	color: #FFF;
+	border-radius: 99px;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 30px;
+	font-weight: bold;
+	height: 30px;
+	line-height: 30px;
+	margin: 5px;
+	text-align: center;
+	width: 30px;
+    -webkit-app-region: no-drag;
+}
+.topbar_btn:hover {
+	background: #FFF;
+	color: #303F9F;
+	text-decoration: none;
+}
+#help_btn {
+	left: 0px;
+	position: absolute;
+	top: 0px;
+}
+#help_btn:before {
+	content: "?";
+}
+#select_chat_btn {
+	left: 35px;
+	position: absolute;
+	top: 0px;
+}
+#select_chat_btn:before {
+	content: "+";
+}
+#reset_btn {
+	left: 70px;
+	position: absolute;
+	top: 0px;
+}
+#reset_btn:before {
+	content: "↺";
+}
+#minimize_btn {
+	position: absolute;
+	right: 35px;
+	top: 0px;
+}
+#minimize_btn:before {
+	content: "–";
+}
+#close_btn {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+}
+#close_btn:before {
+	content: "×";
+}
+#console_btn {
+    cursor: pointer;
+}
