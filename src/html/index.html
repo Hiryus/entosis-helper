@@ -42,9 +42,9 @@
             <h3>Commands</h3>
             <p>
                 It recognize the following <em>format</em> :
-                <span class="code">[system_name] / [node_id] / [status]</span>
+                <span class="code">[system_name] / [node_id] / [status] / [time_left]</span>
                 <br>
-                Example : <span class="code">DO6H-Q / Z99 / new</span>
+                Example : <span class="code">DO6H-Q / Z99 / friendly / 0:55</span>
             </p>
             <p>
                 <span class="code">[status]</span> can be one of the following values :
@@ -60,9 +60,17 @@
             <p>
                 Note that "new" and "neutral" are basically the same thing and are shown as "neutral". You can use either command as you prefer (or both).
             </p>
+            <p>
+                <span class="code">[time_left]</span> must follow a strict format : <span class="code">[minutes]:[seconds]</span>.
+				You can also use the <span class="code">warmup</span> keyword instead of a timer.
+            </p>
             <h3>Tips and tricks</h3>
             <p>
                 You can <em>click on a system</em> name to show nodes details.
+            </p>
+            <p>
+                The tool selects the last fleet file by default.
+				If you have <em>several characters</em> logged-in in different fleets, make sure to double-check as Murphy law says that you will never get the right one !
             </p>
             <p>
                 I highly recommand you to <em>drag and drop</em> system name instead of writting it manually.

@@ -2,9 +2,6 @@ const fs = require("fs");
 
 class Watcher {
     
-    /*
-    *   Watcher constructor
-    */
     constructor(eventer) {
         this.buffer = Buffer.alloc(16*1024);
         this.eventer = eventer;
@@ -12,10 +9,6 @@ class Watcher {
         this.fd = null;
     }
     
-    /*
-    *   manage()
-    *   Watch @fileName and unwatch old file if needed.
-    */
     manage(fileName) {
         this.reset().then(() => {
             this.fileName = fileName;
@@ -25,10 +18,6 @@ class Watcher {
         });
     }
     
-    /*
-    *   process()
-    *   Open, read and close file (called periodically).
-    */
     process() {
         return this.open()
         .then(() => this.read())
@@ -39,10 +28,6 @@ class Watcher {
         });
     }
     
-    /*
-    *   reset()
-    *   Close file and stop watching it.
-    */
     reset() {
         return this.close().then(() => {
             if(this.fileName !== null) fs.unwatchFile(this.fileName);
@@ -52,20 +37,12 @@ class Watcher {
         });
     }
     
-    /*
-    *   watch()
-    *   Watch file avery 5s. If new content, process it.
-    */
     watch() {
         fs.watchFile(this.fileName, { persistent: true, interval: 5*1000 }, (curr, prev) => {
             if(curr.size > prev.size) this.process();
         });
     }
     
-    /*
-    *   open()
-    *   Open file.
-    */
     open() {
         if(this.fd !== null) return Promise.resolve(this.fd);
         else return new Promise((resolve, reject) => {
@@ -76,10 +53,6 @@ class Watcher {
         });
     }
     
-    /*
-    *   close()
-    *   Close file.
-    */
     close() {
         if(this.fd === null) {
             return Promise.resolve();
@@ -94,10 +67,6 @@ class Watcher {
         }
     }
     
-    /*
-    *   read()
-    *   Read file and decode content.
-    */
     read() {
         return new Promise((resolve, reject) => {
             fs.read(this.fd, this.buffer, 0, this.buffer.length, this.position, (err, bytesRead, buffer) => {
@@ -113,15 +82,11 @@ class Watcher {
         });
     }
     
-    /*
-    *   parse()
-    *   Decode content and emit "newLog" when a new line is available.
-    */
     parse(chunk) {
         this.data += chunk.toString("utf16le"); // UTF16LE ? CCPls...
         let lines = this.data.split(/\r?\n/);
         if(lines.length > 1) {
-            lines.forEach((line) => this.eventer.emit("newLog", line) );
+            lines.forEach((line) => this.eventer.emit("new_log", line) );
             this.data = lines[lines.length-1];
         }
     }

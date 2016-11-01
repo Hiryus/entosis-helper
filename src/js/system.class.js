@@ -1,107 +1,61 @@
-const ejs = require("ejs");
-const $ = require("jquery");
+const root = require("electron").remote.app.getAppPath();
+const ihm  = require(root + "/js/ihm.singleton.js");
+const Node = require(root + "/js/node.class.js");
 
 class System {
     
-    /*
-    *   System constructor with @name of the system
-    */
     constructor(name) {
         this.name = name;
         this.nodes = [];
     }
     
-    /*
-    *   destruct()
-    *   Delete system on view.
-    */
-    destruct() {
-        $("#" + this.name + "_system").detach();
+    destroy() {
+        this.nodes.forEach((node) => node.destroy);
+        ihm.getSystemDiv(this.name).detach();
+        return this;
     }
     
-    /*
-    *   createNode()
-    *   Create node with @id ID.
-    */
     createNode(id) {
-        let node = { id: id, state: "neutral" };
+        let node = new Node(this.name, id);
         this.nodes.push(node);
-        return node;
+        return node.draw();
     }
     
-    /*
-    *   deleteNode()
-    *   Delete node with @id ID and update view.
-    */
     deleteNode(id) {
-        id = id.toUpperCase();
-        this.nodes = this.nodes.filter((node) => node.id != id);
-        this.update();
+        return this.getNode(id).then((node) => {
+            return node.destroy();
+        }).then((node) => {
+            this.nodes = this.nodes.filter((e) => node.id != e.id);
+            return this.update();
+        });
     }
     
-    /*
-    *   getNode()
-    *   Return node with @id ID.
-    */
     getNode(id) {
         id = id.toUpperCase();
         let nodes = this.nodes.filter((node) => node.id == id);
-        if(nodes.length > 0) return nodes[0];
+        if(nodes.length > 0) return Promise.resolve(nodes[0]);
         else return this.createNode(id);
     }
     
-    /*
-    *   setNode()
-    *   Set @state state on node with @id ID and update view.
-    *   Create the node if needed.
-    */
-    setNode(id, state) {
-        let node = this.getNode(id);
-		if(state != null) node.state = state;
-        this.update();
+    setNode(id, state, timer) {
+        return this.getNode(id)
+            .then((node) => node.setStatus(state, timer))
+            .then(() => this.update())
+            .then(() => this);
     }
     
-    /*
-    *   update()
-    *   Update view based on internal system state.
-    */
     update() {
-        function formatNodes(list) {
-            if(list.length > 0) return list.map((node) => node.id).join(", ");
-            else return "none";
-        }
+        // Compute
         let neutral = this.nodes.filter((node) => node.state == "neutral");
         let friendly = this.nodes.filter((node) => node.state == "friendly");
         let enemy = this.nodes.filter((node) => node.state == "enemy");
-        // System summary
-        $("#" + this.name + "_system .nb_neutral").text(neutral.length);
-        $("#" + this.name + "_system .nb_friendly").text(friendly.length);
-        $("#" + this.name + "_system .nb_enemy").text(enemy.length);
-        // System details
-        $("#" + this.name + "_neutral_nodes").text(formatNodes(neutral));
-        $("#" + this.name + "_friendly_nodes").text(formatNodes(friendly));
-        $("#" + this.name + "_enemy_nodes").text(formatNodes(enemy));
+        // Update
+        ihm.setSystemSummary(this.name, neutral.length, friendly.length, enemy.length);
+        return this;
     }
     
-    /*
-    *   draw()
-    *   Add the system to view (when created).
-    */
     draw() {
-        return new Promise((resolve, reject) => {
-            ejs.renderFile(root + "/html/system.ejs", {
-                system: this.name
-            }, function(err, html) {
-                if(err) reject(err);
-                else resolve(html);
-            });
-        }).then((html) => {
-            $("#system_list").append(html);
-            $("#" + this.name + "_system .system_details").hide();
-            $("#" + this.name + "_system").click(() => {
-                $("#" + this.name + "_system .system_details").toggle(200);
-            });
-        });
+        return ihm.drawSystem(this.name);
     }
     
 }
