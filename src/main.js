@@ -1,12 +1,15 @@
 const app           = require("electron").app;
 const BrowserWindow = require("electron").BrowserWindow;
+const updater 		= require(app.getAppPath() + "/js/updater.singleton.js");
+
+const DEBUG = false;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
 
-function createWindow () {
-    // Create the browser window.
+function createWindow() {
+    // Create the browser window
     win = new BrowserWindow({
         width: 650,
         height: 800,
@@ -14,13 +17,10 @@ function createWindow () {
         resizable: true,
         icon: __dirname + "/img/icon.png"
     });
-    
-    // and load index.html.
-    win.loadURL(`file://${__dirname}/html/index.html`);
-    
-    // Open the DevTools.
-//    win.webContents.openDevTools();
-    
+    // and load index.html
+    win.loadURL(app.getAppPath() + "/html/index.html");
+    // Open the DevTools if in DEBUG mode
+	if(DEBUG) win.webContents.openDevTools();
     // Emitted when the window is closed.
     win.on("closed", () => {
         // Dereference the window object, usually you would store windows
@@ -33,7 +33,10 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+app.on("ready", () => {
+	 createWindow();
+	 updater.checkForUpdate().catch((err) => console.error(err));
+});
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
@@ -42,7 +45,7 @@ app.on("window-all-closed", () => {
     if(process.platform !== "darwin") {
         app.quit();
     }
-})
+});
 
 app.on("activate", () => {
     // On macOS it's common to re-create a window in the app when the
@@ -50,4 +53,4 @@ app.on("activate", () => {
     if(win === null) {
         createWindow();
     }
-})
+});

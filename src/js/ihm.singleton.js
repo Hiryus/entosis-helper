@@ -23,6 +23,8 @@ class Ihm {
 		$("#close_btn").click(() => remote.getCurrentWindow().close());
 		// Logs handlers
 		this.setuplogs();
+		// Set version
+		this.setVersion();
 	}
     
     resize() {
@@ -45,6 +47,11 @@ class Ihm {
             $("#console_contents").append($("<pre/>").text(msg));
             console.log(msg);
         });
+	}
+	
+	setVersion() {
+		let version = require(remote.app.getAppPath() + "/package.json").version;
+		$("#version").text("v" + version);
 	}
 	
     getSystemDiv(system) {

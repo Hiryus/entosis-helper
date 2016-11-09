@@ -89,10 +89,10 @@
 		</div>
 	</section>
 	<footer>
-		Created by Ryanis | <a id="console_btn">Show console logs</a>
+		Created by Ryanis | <span id="version"></span> | <a id="console_btn">Show console logs</a>
 	</footer>
     <script>
-        const root = require("electron").remote.app.getAppPath();
+		const root = require("electron").remote.app.getAppPath();
         const Application = require(root + "/js/application.class.js");
         let app = new Application();
     </script>
