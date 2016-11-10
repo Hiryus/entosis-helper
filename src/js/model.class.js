@@ -1,5 +1,5 @@
-const fs          = require("fs");
-const levenshtein = require('fast-levenshtein');
+const fse         = require("fs-extra-promise");
+const levenshtein = require("fast-levenshtein");
 const root        = require("electron").remote.app.getAppPath();
 const System      = require(root + "/js/system.class.js");
 
@@ -24,15 +24,13 @@ class Model {
     }
     
 	loadSystems() {
-		if(this.systemNames.length != 0) return Promise.resolve();
-		else return new Promise((resolve, reject) => {
-			fs.readFile(root + "/data/systems.txt", "utf8", (err, contents) => {
-				if(err) reject(err);
-				else resolve(contents);
+		if(this.systemNames.length != 0) {
+			return Promise.resolve();
+		} else {
+			return fse.readFileAsync(root + "/data/systems.txt", "utf8").then((contents) => {
+				this.systemNames = contents.split("\n").map((line) => line.trim().toUpperCase());
 			});
-		}).then((contents) => {
-			this.systemNames = contents.split("\n").map((line) => line.trim().toUpperCase());
-		});
+		}
 	}
 	
 	checkSystem(system) {

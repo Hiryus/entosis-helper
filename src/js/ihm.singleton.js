@@ -38,6 +38,11 @@ class Ihm {
             console.error(err.stack);
             $("#console_contents").append($("<pre/>").text(err.stack));
         });
+		// Infos
+        this.eventer.on("info", (msg) => {
+            console.info(msg);
+            $("#console_contents").append($("<pre/>").text(msg));
+        });
 		// New command parsed
         this.eventer.on("new_cmd", (cmd) => {
 			let args = [ cmd.system, cmd.node, cmd.state ];
@@ -45,7 +50,7 @@ class Ihm {
 			if(time !== null) args.push(time.replace(/\(|\)/g, ""));
 			let msg = "Notification: new command parsed '" + args.join(" / ") + "'";
             $("#console_contents").append($("<pre/>").text(msg));
-            console.log(msg);
+            console.info(msg);
         });
 	}
 	

@@ -1,9 +1,9 @@
 const app        = require("electron").app;
-const fs         = require("fs");
 const path       = require("path");
+const fse        = require("fs-extra-promise");
 const pRequest   = require("request-promise");
 const request    = require("request");
-const AdmZip     = require('adm-zip');
+const AdmZip     = require("adm-zip");
 const dialog     = require("electron").dialog;
 
 /*
@@ -35,15 +35,8 @@ class Updater {
 	}
 	
 	createDirs() {
-		return new Promise((resolve, reject) => {
-			fs.mkdir(path.join(this.getLauncherPath(), "updates"), (err) => {
-			    if(err) reject(err);
-			    else resolve();
-			});
-		}).catch((err) => {
-			if(err.code == "EEXIST") return; // Ok, folder already exists
-			else throw err;
-		});
+		let dir = path.join(this.getLauncherPath(), "updates");
+		return fse.ensureDirAsync(dir);
 	}
 	
 	getZipName() {
@@ -107,7 +100,7 @@ class Updater {
 		// Download zip
 		return new Promise((resolve, reject) => {
 			console.log("Downloading " + url + "...");
-			request(url).pipe(fs.createWriteStream(this.getZipFile()))
+			request(url).pipe(fse.createWriteStream(this.getZipFile()))
 				.on("finish", () => resolve("ok"))
 				.on("error", (err) => reject(err));
 		});
@@ -124,34 +117,27 @@ class Updater {
 			resolve();
 		}).then(() => {
 		   // Rename extracted folder with the version tag
-		   return new Promise((resolve, reject) => {
-    		   let oldName = path.join(this.getLauncherPath(), this.getExtractName());
-    		   let newName = path.join(this.getLauncherPath(), this.release.tag_name);
-    		   fs.rename(oldName, newName, (err) => {
-    		       if(err) reject(err);
-    		       else resolve();
-    		   });
-    		});
+		   let oldName = path.join(this.getLauncherPath(), this.getExtractName());
+		   let newName = path.join(this.getLauncherPath(), this.release.tag_name);
+		   return fse.renameAsync(oldName, newName);
 		});
 	}
 	
 	updateLauncher() {
 		console.log("Updating launcher...");
 		if(process.platform == "win32") {
-    	    var exe = path.join(".", this.release.tag_name, "entosis-helper.exe");
-    		var launcher = path.join(this.getLauncherPath(), "start.bat");
-    		var cmd = "start " + exe;
+    	    let exe = path.join(".", this.release.tag_name, "entosis-helper.exe");
+    		let launcher = path.join(this.getLauncherPath(), "start.bat");
+    		let cmd = "start " + exe;
+			return fse.writeFileAsync(launcher, cmd, "utf8");
 	    } else if(process.platform == "linux") {
-    	    var exe = path.join(".", this.release.tag_name, "entosis-helper");
-    		var launcher = path.join(this.getLauncherPath(), "start.sh");
-    		var cmd = "!/bin/bash\n" + exe;
-	    }
-	    return new Promise((resolve, reject) => {
-	        fs.writeFile(launcher, cmd, "utf8", (err) => {
-		        if(err) reject(err);
-		        else resolve();
-	        });
-	    });
+    	    let exe = path.join(".", this.release.tag_name, "entosis-helper");
+    		let launcher = path.join(this.getLauncherPath(), "start.sh");
+    		let cmd = "!/bin/bash\n" + exe;
+			return fse.writeFileAsync(launcher, cmd, "utf8");
+	    } else {
+			return Promise.reject("Cannot update launcher: unsuported system.");
+		}
 	}
 	
 	notifyUser() {
