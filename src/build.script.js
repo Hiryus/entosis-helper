@@ -22,9 +22,6 @@ function finalize(appPath) {
 			})
 		);
 	}).then(() => {
-		// Create update folder
-		return fse.ensureDirAsync(path.join(appPath, "updates"));
-	}).then(() => {
 		// Create launcher
 		if(process.platform == "win32") {
     	    let exe = path.join(VERSION, "entosis-helper.exe");
@@ -36,7 +33,9 @@ function finalize(appPath) {
     		let launcher = path.join(appPath, "start.sh");
     		let cmd = "!/bin/bash\n" + exe;
 			return fse.writeFileAsync(launcher, cmd, "utf8");
-	    }
+	    } else {
+			return Promise.reject("Cannot update launcher: unsuported system.");
+		}
 	}).catch((err) => console.error(err.stack));
 }
 

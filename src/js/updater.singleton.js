@@ -27,35 +27,58 @@ class Updater {
 	getLauncherPath() {
 		if(app.getPath("exe").match(/src.node_modules.electron/i)) {
 			// Debug mode, application not built
-			return path.join(app.getAppPath(), "..", "tests");
+			return path.join(app.getPath("downloads"), "entosis-helper-autoupdate-tests");
 		} else {
 			let exePath = path.dirname(app.getPath("exe"));
 			return path.join(exePath, "..");
 		}
 	}
 	
-	createDirs() {
-		let dir = path.join(this.getLauncherPath(), "updates");
-		return fse.ensureDirAsync(dir);
-	}
-	
-	getZipName() {
-	    return ["entosis-helper", this.release.tag_name, process.platform, process.arch ].join("-");
-	}
-	
-	getExtractName() {
-	    return ["entosis-helper", process.platform, process.arch ].join("-");
+	getExtractPath() {
+		let extractName = ["entosis-helper", process.platform, process.arch ].join("-");
+		return path.join(this.getLauncherPath(), "updates", extractName);
 	}
 	
 	getZipFile() {
-	    return path.join(this.getLauncherPath(), "updates", this.getZipName() + ".zip");
+		let zipName = ["entosis-helper", this.release.tag_name, process.platform, process.arch ].join("-") + ".zip";
+	    return path.join(this.getLauncherPath(), "updates", zipName);
+	}
+	
+	cleanup() {
+		let dir = path.join(this.getLauncherPath(), "updates");
+		return Promise.resolve().then(() => {
+			// Create update directory
+			return fse.ensureDirAsync(dir);
+		}).then(() => {
+			// Remove .asar archives management
+		    require("electron-patch-fs").patch();
+			// Read update directory
+			return fse.readdirAsync(dir);
+		}).then((files) => {
+			// Empty update directory
+			return Promise.all(
+				files.map((file) => fse.removeAsync(path.join(dir, file)))
+			);
+		}).then(() => {
+			// Restore .asar management
+			require("electron-patch-fs").unpatch();
+		}).catch((err) => console.error(err.stack));
 	}
 	
 	checkForUpdate() {
-		return this.getReleaseInfo().then((release) => {
+		return Promise.resolve().then(() => {
+			return this.cleanup();
+		}).then(() => {
+			return this.getReleaseInfo();
+		}).then((release) => {
 		    this.release = release;
-			if(this.isUpToDate(this.version, release.tag_name)) return "up_to_date";
-			else return this.update();
+			if(this.isUpToDate(this.version, release.tag_name)) {
+				console.log("Application is up to date.");
+				return "up_to_date";
+			} else {
+				console.log("Application needs update. Starting now...");
+				return this.update();
+			}
 		});
 	}
 	
@@ -84,11 +107,12 @@ class Updater {
 	
 	update() {
 		console.log("Updating application...");
-	    return this.createDirs()
+	    return this.cleanup()
 			.then(() => this.downloadBinary())
 	        .then(() => this.unzipBinary())
-	        .then(() => this.updateLauncher())
-	        .then(() => this.notifyUser());
+	        .then(() => this.setup())
+	        .then(() => this.cleanup())
+	        .then(() => this.notifyUser())
 	}
 	
 	downloadBinary() {
@@ -109,38 +133,35 @@ class Updater {
 	unzipBinary() {
 		console.log("Unzipping " + this.getZipFile() + "...");
 		return new Promise((resolve, reject) => {
-		    // Extract binary
-		    require("electron-patch-fs").patch(); // Needed for the .asar in the archive
-			let zip = new AdmZip(this.getZipFile());
-			zip.extractAllTo(this.getLauncherPath(), true); // /!\ Synchronous
-			require("electron-patch-fs").unpatch(); // Restore .asar management
-			resolve();
-		}).then(() => {
-		   // Rename extracted folder with the version tag
-		   let oldName = path.join(this.getLauncherPath(), this.getExtractName());
-		   let newName = path.join(this.getLauncherPath(), this.release.tag_name);
-		   return fse.renameAsync(oldName, newName);
+			try {
+				let dest = path.join(this.getLauncherPath(), "updates");
+				require("electron-patch-fs").patch(); // Remove .asar archives management
+				let zip = new AdmZip(this.getZipFile());
+				zip.extractAllTo(dest, true); // /!\ Synchronous
+				require("electron-patch-fs").unpatch(); // Restore .asar management
+				resolve();
+			} catch(err) {
+				reject(err);
+			}
 		});
 	}
 	
-	updateLauncher() {
-		console.log("Updating launcher...");
-		if(process.platform == "win32") {
-    	    let exe = path.join(".", this.release.tag_name, "entosis-helper.exe");
-    		let launcher = path.join(this.getLauncherPath(), "start.bat");
-    		let cmd = "start " + exe;
-			return fse.writeFileAsync(launcher, cmd, "utf8");
-	    } else if(process.platform == "linux") {
-    	    let exe = path.join(".", this.release.tag_name, "entosis-helper");
-    		let launcher = path.join(this.getLauncherPath(), "start.sh");
-    		let cmd = "!/bin/bash\n" + exe;
-			return fse.writeFileAsync(launcher, cmd, "utf8");
-	    } else {
-			return Promise.reject("Cannot update launcher: unsuported system.");
-		}
+	setup() {
+		console.log("Setting up application and launcher...");
+		return fse.readdirAsync(this.getExtractPath()).then((files) => {
+			// Move all files in launcher folder
+			return Promise.all(
+				files.map((file) => {
+					let oldName = path.join(this.getExtractPath(), file);
+					let newName = path.join(this.getLauncherPath(), file);
+					return fse.move(oldName, newName, {clobber:true}); // buggy ?
+				})
+			);
+		});
 	}
 	
 	notifyUser() {
+		console.log("Update complete.");
 		dialog.showMessageBox({
 			type: "info",
 			title: "Update downloaded",

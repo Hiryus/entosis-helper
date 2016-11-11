@@ -35,7 +35,7 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
 	 createWindow();
-	 updater.checkForUpdate().catch((err) => console.error(err));
+	 updater.checkForUpdate().catch((err) => console.error(err.stack));
 });
 
 // Quit when all windows are closed.

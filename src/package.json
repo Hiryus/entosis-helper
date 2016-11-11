@@ -1,6 +1,6 @@
 {
   "name": "entosis-helper",
-  "version": "0.3.0",
+  "version": "0.2.0",
   "description": "This tool analyzes EvE Online chat logs and looks for entosis reports with dedicated format. It then shows a synthetic view of on-going entosis.",
   "main": "main.js",
   "scripts": {
