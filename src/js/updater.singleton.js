@@ -1,10 +1,12 @@
 const app        = require("electron").app;
 const path       = require("path");
-const fse        = require("fs-extra-promise");
 const pRequest   = require("request-promise");
 const request    = require("request");
 const AdmZip     = require("adm-zip");
 const dialog     = require("electron").dialog;
+require("electron-patch-fs").patch();
+const fse        = require("fs-extra-promise");
+require("electron-patch-fs").unpatch();
 
 /*
 	Directory structure:
@@ -53,17 +55,12 @@ class Updater {
 			// Create update directory
 			return fse.ensureDirAsync(dir);
 		}).then(() => {
-			// Read update directory
-			return fse.readdirAsync(dir);
-		}).then((files) => {
 			// Empty update directory
-			return Promise.all(
-				files.map((file) => fse.removeAsync(path.join(dir, file)))
-			);
+			return fse.emptyDirAsync(dir);
 		}).then(() => {
 			// Restore .asar management
 			require("electron-patch-fs").unpatch();
-		}).catch((err) => console.error(err.stack));
+		}).catch((err) => console.error(err.stack || err));
 	}
 	
 	checkForUpdate() {
@@ -162,7 +159,7 @@ class Updater {
 					if(file == "updates") return Promise.resolve(); // Don't try to move this one !
 					let oldName = path.join(this.getExtractPath(), file);
 					let newName = path.join(this.getLauncherPath(), file);
-					return fse.removeAsync(newName).then(() => fse.moveAsync(oldName, newName));
+					return fse.removeAsync(newName).then(() => fse.copyAsync(oldName, newName));
 				})
 			);
 		}).then(() => {
