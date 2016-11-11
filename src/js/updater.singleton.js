@@ -45,13 +45,14 @@ class Updater {
 	}
 	
 	cleanup() {
+		console.log("Cleaning update directory...");
 		let dir = path.join(this.getLauncherPath(), "updates");
 		return Promise.resolve().then(() => {
+			// Remove .asar archives management
+		    require("electron-patch-fs").patch();
 			// Create update directory
 			return fse.ensureDirAsync(dir);
 		}).then(() => {
-			// Remove .asar archives management
-		    require("electron-patch-fs").patch();
 			// Read update directory
 			return fse.readdirAsync(dir);
 		}).then((files) => {
@@ -110,7 +111,7 @@ class Updater {
 	    return this.cleanup()
 			.then(() => this.downloadBinary())
 	        .then(() => this.unzipBinary())
-	        .then(() => this.setup())
+	        .then(() => this.setupApp())
 	        .then(() => this.cleanup())
 	        .then(() => this.notifyUser())
 	}
@@ -137,7 +138,7 @@ class Updater {
 				let dest = path.join(this.getLauncherPath(), "updates");
 				require("electron-patch-fs").patch(); // Remove .asar archives management
 				let zip = new AdmZip(this.getZipFile());
-				zip.extractAllTo(dest, true); // /!\ Synchronous
+				zip.extractAllTo(dest, true); // /!\ Synchronous, freeze application
 				require("electron-patch-fs").unpatch(); // Restore .asar management
 				resolve();
 			} catch(err) {
@@ -146,17 +147,27 @@ class Updater {
 		});
 	}
 	
-	setup() {
+	setupApp() {
 		console.log("Setting up application and launcher...");
-		return fse.readdirAsync(this.getExtractPath()).then((files) => {
+		return Promise.resolve().then(() => {
+			// Remove .asar archives management
+			require("electron-patch-fs").patch();
+		}).then(() => {
+			// Read all files in update
+			return fse.readdirAsync(this.getExtractPath());
+		}).then((files) => {
 			// Move all files in launcher folder
 			return Promise.all(
 				files.map((file) => {
+					if(file == "updates") return Promise.resolve(); // Don't try to move this one !
 					let oldName = path.join(this.getExtractPath(), file);
 					let newName = path.join(this.getLauncherPath(), file);
-					return fse.move(oldName, newName, {clobber:true}); // buggy ?
+					return fse.removeAsync(newName).then(() => fse.moveAsync(oldName, newName));
 				})
 			);
+		}).then(() => {
+			// Restore .asar management
+			require("electron-patch-fs").unpatch();
 		});
 	}
 	
