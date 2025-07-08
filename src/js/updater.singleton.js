@@ -20,12 +20,12 @@ require("electron-patch-fs").unpatch();
 */
 
 class Updater {
-	
+
 	constructor() {
 		this.version = require(app.getAppPath() + "/package.json").version;
 		this.release = null;
 	}
-	
+
 	getLauncherPath() {
 		if(app.getPath("exe").match(/src.node_modules.electron/i)) {
 			// Debug mode, application not built
@@ -35,17 +35,17 @@ class Updater {
 			return path.join(exePath, "..");
 		}
 	}
-	
+
 	getExtractPath() {
 		let extractName = ["entosis-helper", process.platform, process.arch ].join("-");
 		return path.join(this.getLauncherPath(), "updates", extractName);
 	}
-	
+
 	getZipFile() {
 		let zipName = ["entosis-helper", this.release.tag_name, process.platform, process.arch ].join("-") + ".zip";
 	    return path.join(this.getLauncherPath(), "updates", zipName);
 	}
-	
+
 	cleanup() {
 		console.log("Cleaning update directory...");
 		let dir = path.join(this.getLauncherPath(), "updates");
@@ -62,7 +62,7 @@ class Updater {
 			require("electron-patch-fs").unpatch();
 		}).catch((err) => console.error(err.stack || err));
 	}
-	
+
 	checkForUpdate() {
 		return Promise.resolve().then(() => {
 			return this.cleanup();
@@ -79,7 +79,7 @@ class Updater {
 			}
 		});
 	}
-	
+
 	getReleaseInfo() {
 		return pRequest({
 			uri: "https://api.github.com/repos/ShadowRyanis/entosis-helper/releases/latest",
@@ -87,22 +87,22 @@ class Updater {
 			json: true
 		});
 	}
-	
+
 	isUpToDate(current, latest) {
 		// Remove leading "v" if needed and split into major and minor numbers
-		current = (current.match(/v.+/) ? current.substr(0, current.length) : current).split(".");
-		latest = (latest.match(/v.+/) ? latest.substr(0, latest.length) : latest).split(".");
+		current = (current.match(/v.+/) ? current.substring(1) : current).split(".");
+		latest = (latest.match(/v.+/) ? latest.substring(1) : latest).split(".");
 		// Convert strings to numbers
 		current = current.map((v) => parseInt(v));
 		latest = latest.map((v) => parseInt(v));
 		// Compare versions numbers
-		if(latest.length !== 3) return true; 
-		else if(current[0] < latest[0]) return false;
-		else if(current[1] < latest[1]) return false;
-		else if(current[2] < latest[2]) return false;
+		if(latest.length !== 3) return true;
+		else if(current[0] !== latest[0]) return current[0] > latest[0];
+		else if(current[1] !== latest[1]) return current[1] > latest[1];
+		else if(current[2] !== latest[2]) return current[2] > latest[2];
 		else return true;
 	}
-	
+
 	update() {
 		console.log("Updating application...");
 	    return this.cleanup()
@@ -112,7 +112,7 @@ class Updater {
 	        .then(() => this.cleanup())
 	        .then(() => this.notifyUser())
 	}
-	
+
 	downloadBinary() {
 		// Get the right binary url
 		const url = this.release.assets.filter((pack) => {
@@ -127,7 +127,7 @@ class Updater {
 				.on("error", (err) => reject(err));
 		});
 	}
-	
+
 	unzipBinary() {
 		console.log("Unzipping " + this.getZipFile() + "...");
 		return new Promise((resolve, reject) => {
@@ -143,7 +143,7 @@ class Updater {
 			}
 		});
 	}
-	
+
 	setupApp() {
 		console.log("Setting up application and launcher...");
 		return Promise.resolve().then(() => {
@@ -167,7 +167,7 @@ class Updater {
 			require("electron-patch-fs").unpatch();
 		});
 	}
-	
+
 	notifyUser() {
 		console.log("Update complete.");
 		dialog.showMessageBox({
@@ -179,7 +179,7 @@ class Updater {
 			defaultId: 0
 		});
 	}
-	
+
 }
 
 module.exports = new Updater();
