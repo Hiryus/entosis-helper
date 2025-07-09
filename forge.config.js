@@ -3,11 +3,8 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
     makers: [{
-        name: '@electron-forge/maker-squirrel',
-        config: {},
-    }, {
         name: '@electron-forge/maker-zip',
-        platforms: ['darwin'],
+        config: {},
     }, {
         name: '@electron-forge/maker-deb',
         config: {},
