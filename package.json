@@ -4,6 +4,7 @@
     "dependencies": {
         "electron-squirrel-startup": "^1.0.1",
         "fast-levenshtein": "^2.0.6",
+        "update-electron-app": "^3.1.1",
         "vue": "^3.5.17"
     },
     "devDependencies": {
@@ -15,6 +16,7 @@
         "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
         "@electron-forge/plugin-fuses": "^7.8.1",
         "@electron-forge/plugin-vite": "^7.8.1",
+        "@electron-forge/publisher-github": "^7.8.1",
         "@electron/fuses": "^1.8.0",
         "@vitejs/plugin-vue": "^6.0.0",
         "electron": "37.2.0",
@@ -24,6 +26,7 @@
     "main": ".vite/build/main.js",
     "name": "entosis-helper",
     "productName": "entosis-helper",
+    "repository": "github:Hirus/entosis-helper",
     "scripts": {
         "start": "electron-forge start",
         "package": "electron-forge package",

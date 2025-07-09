@@ -1,12 +1,14 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import started from 'electron-squirrel-startup';
+import { updateElectronApp } from 'update-electron-app';
 import path from 'node:path';
 
 import * as parser from './backend/parser.js';
 import Watcher from './backend/watcher.js';
 
-const DEBUG = true;
-const STALE_DELAY = 30; // s
+updateElectronApp();
+
+const DEBUG = false;
 let mainWindow = null;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
