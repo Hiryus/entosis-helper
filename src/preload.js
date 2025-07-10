@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('actions', {
     close: () => ipcRenderer.invoke('close'),
+    devTools: () => ipcRenderer.invoke('dev_tools'),
     minimize: () => ipcRenderer.invoke('minimize'),
     selectChat: () => ipcRenderer.invoke('select_chat'),
 });

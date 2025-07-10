@@ -14,6 +14,7 @@
     const model = ref(new Model());
 
     const close = () => window.actions.close();
+    const enableDevTools = () => window.actions.devTools();
     const minimize = () => window.actions.minimize();
     const selectChat = () => window.actions.selectChat();
     const toggleConsole = () => consoleShown.value = !consoleShown.value;
@@ -50,7 +51,7 @@
         <Help v-if="helpShown" />
     </section>
     <footer>
-        Created by Ryanis | <span id="version">v{{ version }}</span> | <a @click.prevent="toggleConsole()">Show console logs</a>
+        Created by Ryanis | <span id="version">v{{ version }}</span> | <a @click.prevent="toggleConsole()">Console logs</a> | <a @click.prevent="enableDevTools()">Dev Tools</a>
     </footer>
 </template>
 

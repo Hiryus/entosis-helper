@@ -4,13 +4,12 @@ import path from 'node:path';
 import * as parser from './backend/parser.js';
 import Watcher from './backend/watcher.js';
 
-const DEBUG = false;
 let mainWindow = null;
 
 async function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: DEBUG ? 1024 : 650,
+        width: 650,
         height: 800,
         frame: false,
         resizable: true,
@@ -26,10 +25,6 @@ async function createWindow() {
     } else {
         await mainWindow.loadFile(path.join(__dirname, '..', 'renderer', MAIN_WINDOW_VITE_NAME, 'index.html'));
     }
-
-    // Open the DevTools if in DEBUG mode
-    if(DEBUG)
-        mainWindow.webContents.openDevTools();
 };
 
 /**
@@ -48,6 +43,7 @@ app.whenReady().then(async () => {
     // Create main window
     await createWindow();
     ipcMain.handle('close', () => mainWindow.close());
+    ipcMain.handle('dev_tools', () => mainWindow.webContents.openDevTools());
     ipcMain.handle('minimize', () => mainWindow.minimize());
     ipcMain.handle('select_chat', () => {
         dialog.showOpenDialog({
