@@ -79,3 +79,8 @@ To Package the application into a deliverable ZIP file:
 npm run make
 ```
 NB: the `npm run package` command is similar, except it builds a portable version of the applicaiton without bundling it into a ZUP file.
+
+## TODO
+
+* [ ] Add a linter.
+* [ ] Ensure top bar buttons are visible on scrolling or only enable scrolling of the middle white section.
