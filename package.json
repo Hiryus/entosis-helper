@@ -31,5 +31,5 @@
         "publish": "electron-forge publish",
         "lint": "echo \"No linting configured\""
     },
-    "version": "1.0.0"
+    "version": "1.0.1"
 }

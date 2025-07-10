@@ -1,7 +1,7 @@
 <script setup>
     import { ref } from 'vue';
 
-    const { id, expiration } = defineProps({ id: String, expiration: Date||null });
+    const { id, expiration, state } = defineProps({ id: String, expiration: Date, state: String });
     const counter = ref("...");
 
     function updateTimer() {
@@ -26,7 +26,7 @@
 <template>
     <span id="{{ id }}_node">
         <span class="node_name">{{ id }}</span>
-        <span class="node_timer">{{ counter }}</span>
+        <span class="node_timer" v-if="state !== 'neutral'">{{ counter }}</span>
     </span>
 </template>
 

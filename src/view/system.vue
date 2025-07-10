@@ -19,7 +19,7 @@
         <li>
             <em class="neutral_nodes_label">Neutral</em>:
             <span class="neutral_nodes">
-                <Node :id="node.id" :expiration="node.expiration" v-for="node in neutralNodes" />
+                <Node :id="node.id" :expiration="node.expiration" :state="node.state" v-for="node in neutralNodes" />
                 <span v-if="neutralNodes.length === 0">
                     none
                 </span>
@@ -28,7 +28,7 @@
         <li>
             <em class="friendly_nodes_label">Friendly</em>:
             <span class="friendly_nodes">
-                <Node :id="node.id" :expiration="node.expiration" v-for="node in friendlyNodes" />
+                <Node :id="node.id" :expiration="node.expiration" :state="node.state" v-for="node in friendlyNodes" />
                 <span v-if="friendlyNodes.length === 0">
                     none
                 </span>
@@ -37,7 +37,7 @@
         <li>
             <em class="enemy_nodes_label">Enemy</em>:
             <span class="enemy_nodes">
-                <Node :id="node.id" :expiration="node.expiration" v-for="node in enemyNodes" />
+                <Node :id="node.id" :expiration="node.expiration" :state="node.state" v-for="node in enemyNodes" />
                 <span v-if="enemyNodes.length === 0">
                     none
                 </span>

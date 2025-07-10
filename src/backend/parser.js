@@ -6,7 +6,7 @@ import ALL_SYSTEMS from './systems.list.js';
 const STATUS_REG = '((?:new)|(?:friendly)|(?:allied)|(?:enemy)|(?:opponent)|(?:neutral)|(?:unknown)|(?:no view))';
 const SYSTEM_REG = '([a-z0-9-]+)';
 const NODE_REG = '([a-z][0-9]{2})';
-const TIME_REG = '((?:warm)|(?:warmup)|(?:vanished)|(?:done)|(?:disappeared)|(?:[0-9]+.[0-9]+))';
+const TIME_REG = '((?:warm)|(?:warmup)|(?:vanished)|(?:done)|(?:none)|(?:disappeared)|(?:[0-9]+.[0-9]+))';
 const MSG_REG_EXP = new RegExp(SYSTEM_REG + '\\s?/\\s?' + NODE_REG + '\\s?/\\s?' + STATUS_REG + '(?:\\s?/\\s?' + TIME_REG + ')?', 'i');
 const META_REG_EXP = /\[\s*([0-9]+).([0-9]+).([0-9]+)\s*([0-9]+):([0-9]+):([0-9]+)\s*\]\s*([^>]+)\s*>/i;
 
@@ -80,7 +80,7 @@ export function parseMessage(line) {
         : logPatterns[3].match(/((?:enemy)|(?:opponent))/i) ? 'enemy'
         : 'neutral';
     // Parse time
-    if (logPatterns[4].match(/(?:vanished)|(?:done)|(?:disappeared)/i)) {
+    if (logPatterns[4].match(/(?:vanished)|(?:done)|(?:none)|(?:disappeared)/i)) {
         return { system, node, state, minutes: 0, seconds: 0 };
     }
     const timePatterns = logPatterns[4].match(/([0-9]+).([0-9]+)/i);
